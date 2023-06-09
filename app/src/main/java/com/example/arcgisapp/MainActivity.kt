@@ -1,7 +1,13 @@
 package com.example.arcgisapp
 
+import android.content.res.Configuration
 import android.os.Bundle
+import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.ListView
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment
@@ -11,6 +17,7 @@ import com.esri.arcgisruntime.geometry.Polygon
 import com.esri.arcgisruntime.geometry.Polyline
 import com.esri.arcgisruntime.geometry.SpatialReferences
 import com.esri.arcgisruntime.mapping.ArcGISMap
+import com.esri.arcgisruntime.mapping.Basemap
 import com.esri.arcgisruntime.mapping.BasemapStyle
 import com.esri.arcgisruntime.mapping.Viewpoint
 import com.esri.arcgisruntime.mapping.view.Graphic
@@ -30,17 +37,81 @@ class MainActivity : AppCompatActivity() {
     private val mapView: MapView by lazy {
         activityMainBinding.mapView
     }
-    
+
+    private val drawerLayout: DrawerLayout by lazy {
+        activityMainBinding.drawerLayout
+    }
+
+    private val drawerList: ListView by lazy {
+        activityMainBinding.drawerList
+    }
+
+    private lateinit var mNavigationDrawerItemTitles: Array<String>
+
+    private val mDrawerToggle: ActionBarDrawerToggle by lazy {
+        setupDrawer()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        setContentView(R.layout.activity_main)
         setContentView(activityMainBinding.root)
-        setupMap()
 //        addGraphics()
 
         setApiKeyForApp()
+
+        // inflate navigation drawer with all basemap types in a human readable format
+        mNavigationDrawerItemTitles =
+            BasemapStyle.values().map { it.name.replace("_", " ") }
+                .toTypedArray()
+
+        addDrawerItems()
+        drawerLayout.addDrawerListener(mDrawerToggle)
+
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setHomeButtonEnabled(true)
+            // set opening basemap title to ARCGIS IMAGERY
+            title = mNavigationDrawerItemTitles[0]
+        }
+
+        // create a map with the imagery Basemap and set it to the map
+        mapView.map = ArcGISMap(BasemapStyle.ARCGIS_IMAGERY)
+        mapView.setViewpoint(Viewpoint(47.6047, -122.3334, 10000000.0))
     }
+
+    /**
+     * Add navigation drawer items
+     */
+    private fun addDrawerItems() {
+        ArrayAdapter(this, android.R.layout.simple_list_item_1, mNavigationDrawerItemTitles).apply {
+            drawerList.adapter = this
+            drawerList.onItemClickListener =
+                AdapterView.OnItemClickListener { _, _, position, _ -> selectBasemap(position) }
+        }
+    }
+
+    /**
+     * Set up the navigation drawer
+     */
+    private fun setupDrawer() =
+        object :
+            ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close) {
+
+            override fun isDrawerIndicatorEnabled() = true
+
+            /** Called when a drawer has settled in a completely open state.  */
+            override fun onDrawerOpened(drawerView: View) {
+                super.onDrawerOpened(drawerView)
+                supportActionBar?.title = title
+                invalidateOptionsMenu() // creates call to onPrepareOptionsMenu()
+            }
+
+            /** Called when a drawer has settled in a completely closed state.  */
+            override fun onDrawerClosed(view: View) {
+                super.onDrawerClosed(view)
+                invalidateOptionsMenu() // creates call to onPrepareOptionsMenu()
+            }
+        }
 
     private fun addGraphics() {
         // create a graphics overlay and add it to the map view
@@ -115,18 +186,38 @@ class MainActivity : AppCompatActivity() {
         graphicsOverlay.graphics.add(polygonGraphic)
     }
 
+    /**
+     * Select the Basemap item based on position in the navigation drawer
+     *
+     * @param position order int in navigation drawer
+     */
+    private fun selectBasemap(position: Int) {
+        // update selected item and title, then close the drawer
+        drawerList.setItemChecked(position, true)
+        drawerLayout.closeDrawer(drawerList)
 
-    private fun setupMap() {
+        // get basemap title by position
+        val baseMapTitle = mNavigationDrawerItemTitles[position]
+        supportActionBar?.title = baseMapTitle
 
-        // create a map with the BasemapStyle streets
-        val map = ArcGISMap(BasemapStyle.ARCGIS_TOPOGRAPHIC)
+        // create a new Basemap(BasemapStyle.THE_ENUM_SELECTED)
+        mapView.map.basemap =
+            Basemap(BasemapStyle.valueOf(baseMapTitle.replace(" ", "_")))
+    }
 
-        // set the map to be displayed in the layout's MapView
-        mapView.map = map
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Activate the navigation drawer toggle
+        return mDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item)
+    }
 
-        // set the viewpoint, Viewpoint(latitude, longitude, scale)
-        mapView.setViewpoint(Viewpoint(34.0270, -118.8050, 72000.0))
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
+        mDrawerToggle.syncState()
+    }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        mDrawerToggle.onConfigurationChanged(newConfig)
     }
 
     override fun onPause() {
@@ -144,10 +235,7 @@ class MainActivity : AppCompatActivity() {
         mapView.dispose()
     }
 
-    private fun setApiKeyForApp(){
-        // set your API key
-        // Note: it is not best practice to store API keys in source code. The API key is referenced
-        // here for the convenience of this tutorial.
+    private fun setApiKeyForApp() {
 
         ArcGISRuntimeEnvironment.setApiKey("AAPK349dbf4c9eab4be788cd463a2d0f6703vck-3kdRx2K2Z5RFURAA9-Izg6s0LL1xFZP6Rg7SBjHTh8mif16a7dxxdiQcqW4b")
 
