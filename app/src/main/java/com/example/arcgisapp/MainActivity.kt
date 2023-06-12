@@ -9,7 +9,9 @@ import android.widget.ArrayAdapter
 import android.widget.ListView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat.invalidateOptionsMenu
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment
 import com.esri.arcgisruntime.geometry.Point
 import com.esri.arcgisruntime.geometry.PointCollection
@@ -26,17 +28,23 @@ import com.esri.arcgisruntime.mapping.view.MapView
 import com.esri.arcgisruntime.symbology.SimpleFillSymbol
 import com.esri.arcgisruntime.symbology.SimpleLineSymbol
 import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol
+import com.example.arcgisapp.controller.MapController
 import com.example.arcgisapp.databinding.ActivityMainBinding
+import com.example.arcgisapp.view.MapActivityView
 
 class MainActivity : AppCompatActivity() {
 
-    private val activityMainBinding by lazy {
+    private lateinit var mapActivityView: MapActivityView
+    private lateinit var mapController: MapController
+
+   /* private val activityMainBinding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
 
     private val mapView: MapView by lazy {
         activityMainBinding.mapView
     }
+
 
     private val drawerLayout: DrawerLayout by lazy {
         activityMainBinding.drawerLayout
@@ -51,13 +59,22 @@ class MainActivity : AppCompatActivity() {
     private val mDrawerToggle: ActionBarDrawerToggle by lazy {
         setupDrawer()
     }
-
+*/
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(activityMainBinding.root)
+
+       mapActivityView = MapActivityView(this)
+       mapController = MapController(mapActivityView)
+
+       mapController.onCreate(savedInstanceState)
+/*
+
+//        setContentView(activityMainBinding.root)
 //        addGraphics()
 
         setApiKeyForApp()
+
+//        replaceFragment(MapFragment.newInstance(), true)
 
         // inflate navigation drawer with all basemap types in a human readable format
         mNavigationDrawerItemTitles =
@@ -75,13 +92,55 @@ class MainActivity : AppCompatActivity() {
         }
 
         // create a map with the imagery Basemap and set it to the map
-        mapView.map = ArcGISMap(BasemapStyle.ARCGIS_IMAGERY)
-        mapView.setViewpoint(Viewpoint(47.6047, -122.3334, 10000000.0))
+        mapActivityView.map = ArcGISMap(BasemapStyle.ARCGIS_IMAGERY)
+        mapActivityView.setViewpoint(Viewpoint(47.6047, -122.3334, 10000000.0))
+    */}
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return mapActivityView.onOptionsItemSelected(item) || super.onOptionsItemSelected(item)
     }
 
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
+        mapActivityView.onPostCreate(savedInstanceState)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        mapActivityView.onConfigurationChanged(newConfig)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        mapActivityView.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mapActivityView.onResume()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mapActivityView.onDestroy()
+    }
+
+    /*fun replaceFragment(fragment: Fragment, isTransition: Boolean) {
+        val fragmentTransition = supportFragmentManager.beginTransaction()
+
+        if (isTransition) {
+            fragmentTransition.setCustomAnimations(
+                android.R.anim.slide_out_right,
+                android.R.anim.slide_in_left
+            )
+        }
+        fragmentTransition.add(R.id.frame_layout, fragment)
+            .addToBackStack(fragment.javaClass.simpleName).commit()
+    }*/
+///////////////////////////
     /**
      * Add navigation drawer items
-     */
+     *//*
     private fun addDrawerItems() {
         ArrayAdapter(this, android.R.layout.simple_list_item_1, mNavigationDrawerItemTitles).apply {
             drawerList.adapter = this
@@ -90,23 +149,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
+    *//**
      * Set up the navigation drawer
-     */
+     *//*
     private fun setupDrawer() =
         object :
             ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close) {
-
             override fun isDrawerIndicatorEnabled() = true
 
-            /** Called when a drawer has settled in a completely open state.  */
+            *//** Called when a drawer has settled in a completely open state.  *//*
             override fun onDrawerOpened(drawerView: View) {
                 super.onDrawerOpened(drawerView)
                 supportActionBar?.title = title
                 invalidateOptionsMenu() // creates call to onPrepareOptionsMenu()
             }
 
-            /** Called when a drawer has settled in a completely closed state.  */
+            *//** Called when a drawer has settled in a completely closed state.  *//*
             override fun onDrawerClosed(view: View) {
                 super.onDrawerClosed(view)
                 invalidateOptionsMenu() // creates call to onPrepareOptionsMenu()
@@ -116,12 +174,12 @@ class MainActivity : AppCompatActivity() {
     private fun addGraphics() {
         // create a graphics overlay and add it to the map view
         val graphicsOverlay = GraphicsOverlay()
-        mapView.graphicsOverlays.add(graphicsOverlay)
+        mapActivityView.graphicsOverlays.add(graphicsOverlay)
 
 
-        /**
+        *//**
          * Point
-         */
+         *//*
         // create a point geometry with a location and spatial reference
         // Point(latitude, longitude, spatial reference)
         val point = Point(-118.8065, 34.0005, SpatialReferences.getWgs84())
@@ -138,9 +196,9 @@ class MainActivity : AppCompatActivity() {
         // add the point graphic to the graphics overlay
         graphicsOverlay.graphics.add(pointGraphic)
 
-        /**
+        *//**
          * Line
-         */
+         *//*
         // create a point collection with a spatial reference, and add three points to it
         val polylinePoints = PointCollection(SpatialReferences.getWgs84()).apply {
             // Point(latitude, longitude)
@@ -161,9 +219,9 @@ class MainActivity : AppCompatActivity() {
         // add the polyline graphic to the graphics overlay
         graphicsOverlay.graphics.add(polylineGraphic)
 
-        /**
+        *//**
          * Polygon
-         */
+         *//*
         // create a point collection with a spatial reference, and add five points to it
         val polygonPoints = PointCollection(SpatialReferences.getWgs84()).apply {
             // Point(latitude, longitude)
@@ -186,11 +244,11 @@ class MainActivity : AppCompatActivity() {
         graphicsOverlay.graphics.add(polygonGraphic)
     }
 
-    /**
+    *//**
      * Select the Basemap item based on position in the navigation drawer
      *
      * @param position order int in navigation drawer
-     */
+     *//*
     private fun selectBasemap(position: Int) {
         // update selected item and title, then close the drawer
         drawerList.setItemChecked(position, true)
@@ -201,9 +259,10 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.title = baseMapTitle
 
         // create a new Basemap(BasemapStyle.THE_ENUM_SELECTED)
-        mapView.map.basemap =
+        mapActivityView.map.basemap =
             Basemap(BasemapStyle.valueOf(baseMapTitle.replace(" ", "_")))
     }
+    //////////////////////////////////////
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Activate the navigation drawer toggle
@@ -222,23 +281,23 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        mapView.pause()
+        mapActivityView.pause()
     }
 
     override fun onResume() {
         super.onResume()
-        mapView.resume()
+        mapActivityView.resume()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        mapView.dispose()
+        mapActivityView.dispose()
     }
 
     private fun setApiKeyForApp() {
 
         ArcGISRuntimeEnvironment.setApiKey("AAPK349dbf4c9eab4be788cd463a2d0f6703vck-3kdRx2K2Z5RFURAA9-Izg6s0LL1xFZP6Rg7SBjHTh8mif16a7dxxdiQcqW4b")
 
-    }
+    }*/
 
 }
