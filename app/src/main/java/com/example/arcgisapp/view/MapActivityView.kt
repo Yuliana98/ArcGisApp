@@ -67,6 +67,9 @@ class MapActivityView(val activity: AppCompatActivity) {
         mapView.setViewpoint(Viewpoint(47.6047, -122.3334, 10000000.0))
     }
 
+    /**
+     * Add navigation drawer items
+     */
     private fun addDrawerItems() {
         ArrayAdapter(activity, R.layout.simple_list_item_1, mNavigationDrawerItemTitles).apply {
             drawerList.adapter = this
@@ -75,9 +78,17 @@ class MapActivityView(val activity: AppCompatActivity) {
         }
     }
 
+    /**
+     * Set up the navigation drawer
+     */
     private fun setupDrawer() =
         object :
-            ActionBarDrawerToggle(activity, drawerLayout, com.example.arcgisapp.R.string.drawer_open, com.example.arcgisapp.R.string.drawer_close) {
+            ActionBarDrawerToggle(
+                activity,
+                drawerLayout,
+                com.example.arcgisapp.R.string.drawer_open,
+                com.example.arcgisapp.R.string.drawer_close
+            ) {
 
             override fun isDrawerIndicatorEnabled() = true
 
@@ -145,5 +156,4 @@ class MapActivityView(val activity: AppCompatActivity) {
     fun onDestroy() {
         mapView.dispose()
     }
-
 }
