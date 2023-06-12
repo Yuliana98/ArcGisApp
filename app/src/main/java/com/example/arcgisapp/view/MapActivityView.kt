@@ -5,14 +5,16 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment
+import com.esri.arcgisruntime.layers.ArcGISMapImageLayer
 import com.esri.arcgisruntime.mapping.ArcGISMap
 import com.esri.arcgisruntime.mapping.BasemapStyle
-import com.esri.arcgisruntime.mapping.Viewpoint
 
 
 class MapActivityView(private val activity: AppCompatActivity) {
 
     private val baseMapView: BasemapView = BasemapView(activity)
+
+
 
     fun onCreate(savedInstanceState: Bundle?) {
         activity.setContentView(baseMapView.activityMainBinding.root)
@@ -34,7 +36,14 @@ class MapActivityView(private val activity: AppCompatActivity) {
 
         // Create a map with the imagery Basemap and set it to the map
         baseMapView.mapView.map = ArcGISMap(BasemapStyle.ARCGIS_IMAGERY)
-        baseMapView.mapView.setViewpoint(Viewpoint(47.6047, -122.3334, 10000000.0))
+
+        // create the service arcGISMapImageLayer
+        val arcGISMapImageLayer =
+            ArcGISMapImageLayer("http://192.168.1.18:6080/arcgis/rest/services/Servis_SP4_test/MapServer")
+
+        baseMapView.mapView.map.operationalLayers.add(arcGISMapImageLayer)
+
+//        baseMapView.mapView.setViewpoint(Viewpoint(, , ))
     }
 
     private fun setApiKeyForApp() {

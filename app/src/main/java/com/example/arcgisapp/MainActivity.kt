@@ -19,6 +19,7 @@ class MainActivity : AppCompatActivity() {
         mapController = MapController(mapActivityView)
 
         mapController.onCreate(savedInstanceState)
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
